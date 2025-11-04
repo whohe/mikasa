@@ -13,7 +13,7 @@ permissions:
   contents: write
 
 jobs:
-  make-mikasa-iso:
+  make-TTYL-iso:
     runs-on: ubuntu-latest
 
     steps:
@@ -67,7 +67,7 @@ jobs:
 
       - name: Set hostname
         run: |
-          echo "mikasa" | sudo tee filesystem/etc/hostname
+          echo "TTYL" | sudo tee filesystem/etc/hostname
 
       - name: Install locales into filesystem
         run: |
@@ -336,7 +336,7 @@ jobs:
           xorriso -as mkisofs \
             -iso-level 3 \
             -full-iso9660-filenames \
-            -volid "mikasa" \
+            -volid "ttyl" \
             -eltorito-boot boot/grub/bios.img \
             -no-emul-boot \
             -boot-load-size 4 \
@@ -349,7 +349,7 @@ jobs:
             -no-emul-boot \
             -append_partition 2 0xef ./scratch/efiboot.img \
             -append_partition 3 0x83 ./scratch/crypt.img \
-            -output "./mikasa.iso" \
+            -output "./ttyl.iso" \
             -graft-points \
               "./image" \
               /boot/grub/bios.img=./scratch/bios.img \
@@ -357,24 +357,24 @@ jobs:
 
       #- name: Split ISO into parts
       #  run: |
-      #    sudo mv mikasa.iso /mnt/.
+      #    sudo mv ttyl.iso /mnt/.
       #    df -h
       #    ls -lhu .
       #    cd /mnt
       #    ls -lhu .
-      #    sudo split -b 2000M /mnt/mikasa.iso mikasa.iso.part.
+      #    sudo split -b 2000M /mnt/ttyl.iso ttyl.iso.part.
       - name: Delete previous ISO file from MEGA locker
         run: |
-          megarm --username "${{ secrets.MEGA_USER }}"  --password "${{ secrets.MEGA_PASS }}"  /Root/mikasa.iso || true
+          megarm --username "${{ secrets.MEGA_USER }}"  --password "${{ secrets.MEGA_PASS }}"  /Root/ttyl.iso || true
 
       - name: Upload current ISO file to MEGA locker
         run: |
-          megaput --username "${{ secrets.MEGA_USER }}"  --password "${{ secrets.MEGA_PASS }}"  mikasa.iso
+          megaput --username "${{ secrets.MEGA_USER }}"  --password "${{ secrets.MEGA_PASS }}"  ttyl.iso
 
       - name: Get public link
         id: mega_link
         run: |
-          LINK=$(megaexport --username "${{ secrets.MEGA_USER }}" --password "${{ secrets.MEGA_PASS }}" /Root/mikasa.iso)
+          LINK=$(megaexport --username "${{ secrets.MEGA_USER }}" --password "${{ secrets.MEGA_PASS }}" /Root/ttyl.iso)
           echo "🔗 Enlace: $LINK"
           echo "link=$LINK" >> $GITHUB_OUTPUT
       
@@ -390,25 +390,25 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="mikasa-$(date +%Y%m%d-%H%M%S)"
-          ISO_HASH=$(sha256sum mikasa.iso | awk '{print $1}')
+          VERSION="ttyl-$(date +%Y%m%d-%H%M%S)"
+          ISO_HASH=$(sha256sum ttyl.iso | awk '{print $1}')
           BODY="🔗 [Descargar ISO desde MEGA](${{ steps.mega_link.outputs.link }})<br><br>"
           BODY+="**Verificación de integridad (SHA-256):**<br>"
           BODY+="\`${ISO_HASH}\`<br><br>"
           BODY+="Para verificar la integridad de la ISO, ejecuta:<br>"
-          BODY+="\`sha256sum mikasa.iso\` y asegúrate de que el resultado coincida con la firma mostrada arriba."
-          sha256sum mikasa.iso > mikasa.iso.sha256
-          gh release create latest-release mikasa.iso.sha256 --title "Release mikasa.iso" --notes "$BODY" --latest
+          BODY+="\`sha256sum ttyl.iso\` y asegúrate de que el resultado coincida con la firma mostrada arriba."
+          sha256sum ttyl.iso > ttyl.iso.sha256
+          gh release create latest-release ttyl.iso.sha256 --title "Release ttyl.iso" --notes "$BODY" --latest
 
 
       - name: Make commit with signatures and version info
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          sha256sum mikasa.iso > mikasa.iso.sha256
+          sha256sum ttyl.iso > ttyl.iso.sha256
           git config user.name "Wilson"
           git config user.email "wilsonhernandezortiz@gmail.com"
-          git add mikasa.iso.sha256
+          git add ttyl.iso.sha256
           git commit -m "Add sha256 signature for verification purposes"
           git push
 
