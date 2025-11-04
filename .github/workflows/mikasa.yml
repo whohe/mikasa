@@ -147,7 +147,9 @@ jobs:
 
       - name: docker contains who
         run: |
-          usermod -aG docker who
+          sudo chroot filesystem /bin/bash -c "
+            usermod -aG docker who
+          "
 
 
       - name: Make CRYPT folder
